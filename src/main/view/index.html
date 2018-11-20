@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<title>Hadoop Job History</title>
+<link href="./resource/jquery.dataTables.min.css" rel="stylesheet" type="text/css" />
+<link href="./resource/buttons.dataTables.min.css" rel="stylesheet" type="text/css" />
+<script src="./resource/jquery-2.2.3.min.js"></script>
+<script src="./resource/jquery.dataTables.min.js"></script>
+<script src="./resource/dataTables.buttons.min.js"></script>
+<script src="./resource/buttons.html5.min.js"></script>
+<script src="./resource/hadoop.job.history.js" type="text/javascript"></script>
+</head>
+<body>
+<h1 style="display:inline">Hadoop Job History</h1>
+<p style="display:inline;" id="last-update"></p>
+<input type="checkbox" id="autoupdate" name="autoupdate" checked> Auto Update
+<div id="section">
+<table id='applicationTable' class="display nowrap" cellspacing="0" width="100%"></table>
+<p id='msgNoData' style="display:none;">No Data.</p>
+<font color="ff0000">
+<p id='msgFailToGetData' style="display:none;">Failed to get data.</p>
+</font>
+</div>
+</body>
+</html>
