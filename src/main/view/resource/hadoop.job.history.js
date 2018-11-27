@@ -12,7 +12,7 @@ function hideAllTable() {
 function getData() {
 	$.ajax({
 		type : 'GET',
-		url : "http://" + location.hostname + ":" + portNo + "/api"
+		url : "http://" + location.hostname + ":" + portNo + "/api?dn=real"
 	}).done(function(data) {
 		createTable(data);
 	}).fail(function(data) {
@@ -77,7 +77,7 @@ function createTable(data) {
 	
 	$("#last-update").text(date);
 	if (init) {
-		myInterval = setInterval(autoUpdate, 10000);
+		setInterval(autoUpdate, 10000);
 	}	
 }
 

@@ -3,3 +3,4 @@
 .settings/
 hadoop-job-history-1.0-SNAPSHOT/
 target/
+*.txt

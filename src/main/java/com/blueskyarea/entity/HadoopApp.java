@@ -23,6 +23,18 @@ public class HadoopApp {
 
 	@SerializedName("elapsedTime")
 	public String elapsedTime;
+	
+	@SerializedName("memorySeconds")
+	public String memorySeconds;
+	
+	@SerializedName("vcoreSeconds")
+	public String vcoreSeconds;
+	
+	@SerializedName("allocatedMBPerSeconds")
+	public String allocatedMBPerSeconds;
+	
+	@SerializedName("allocatedVCoresPerSeconds")
+	public String allocatedVCoresPerSeconds;
 
 	@SerializedName("allocatedMB")
 	public String allocatedMB;

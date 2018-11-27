@@ -41,6 +41,10 @@ public class HadoopJobHistoryConfig {
 		return config.getString("hadoop.status");
 	}
 	
+	public String getHadoopStatusHistory() {
+		return config.getString("hadoop.status.history");
+	}
+	
 	public String getHadoopUser() {
 		return config.getString("hadoop.user");
 	}
