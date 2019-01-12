@@ -1,16 +1,16 @@
 package com.blueskyarea;
 
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.log4j.Logger;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnectionFactory;
@@ -20,19 +20,21 @@ import org.eclipse.jetty.server.handler.HandlerList;
 import org.eclipse.jetty.server.handler.ResourceHandler;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import com.blueskyarea.config.HadoopJobHistoryConfig;
+import com.blueskyarea.config.HadoopResultSaverConfig;
 import com.blueskyarea.generator.JobHistoryGenerator;
 import com.blueskyarea.generator.JobHistoryReader;
+import com.blueskyarea.thread.JobHistoryThread;
 
-public class HadoopJobHistory {
-	private static final Logger LOG = Logger.getLogger("HadoopJobHistory");
-	private static HadoopJobHistoryConfig config = HadoopJobHistoryConfig
+public class HadoopResultSaver {
+	private static final Logger LOG = LoggerFactory.getLogger("HadoopResultSaver");
+	private static HadoopResultSaverConfig config = HadoopResultSaverConfig
 			.getInstance();
-	private static JobHistoryGenerator realtimeGenerator = new JobHistoryGenerator(
-			config);
 	private static JobHistoryReader historyReader = new JobHistoryReader();
-	public static String thisJarDirPath = HadoopJobHistory.getJarPath();
+	public static JobHistoryGenerator realtimeGenerator = new JobHistoryGenerator(config);
+	public static String thisJarDirPath = HadoopResultSaver.getJarPath();
 	public static String historyFilePath = thisJarDirPath + "/../history.txt";
 
 	public static void main(String[] args) throws InterruptedException {		
@@ -68,28 +70,31 @@ public class HadoopJobHistory {
 
 		// start server
 		try {
-			jettyServer.start();
-
-			// start thread for history
-			Runnable r = () -> {
-				while (true) {
+			//jettyServer.start();
+			//(new Thread(new JobHistoryThread(10))).start();
+	        ExecutorService s = Executors.newSingleThreadExecutor();
+	        s.submit(new JobHistoryThread());
+			
+			// start thread for getting history
+			/*Runnable r = () -> {
+				//while (true) {
 					try {
 						String result = realtimeGenerator.startToGetHistory();
 						File file = new File(historyFilePath);
 						FileWriter filewriter = new FileWriter(file);
 						filewriter.write(result);
 						filewriter.close();
-						Thread.sleep(60000L);
+						Thread.sleep(10000L);
 					} catch (Exception e) {
 						// nothing to do
 					}
-				}
-			};
+				//}
+			};*/
 
-			Thread thread = new Thread(r);
-			thread.start();
-			jettyServer.join();
-			thread.join();
+			//Thread thread = new Thread(r);
+			//thread.start();
+			//jettyServer.join();
+			//thread.join();
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
@@ -97,8 +102,8 @@ public class HadoopJobHistory {
 	}
 	
 	public static String getJarPath() {
-        final String classFileName = "/" + HadoopJobHistory.class.getName().replaceAll("\\.", "/") + ".class";
-        final String classFilePath = HadoopJobHistory.class.getResource(classFileName).getPath();
+        final String classFileName = "/" + HadoopResultSaver.class.getName().replaceAll("\\.", "/") + ".class";
+        final String classFilePath = HadoopResultSaver.class.getResource(classFileName).getPath();
         final File jarFilePath = new File(classFilePath.replaceFirst("!/.*$", ""));
         return jarFilePath.getParent().replaceFirst("file:", "");
 	}

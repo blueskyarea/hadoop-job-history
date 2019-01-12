@@ -7,13 +7,15 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.time.DateFormatUtils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import com.blueskyarea.HadoopJobHistory;
-import com.blueskyarea.config.HadoopJobHistoryConfig;
+import com.blueskyarea.HadoopResultSaver;
+import com.blueskyarea.config.HadoopResultSaverConfig;
 import com.blueskyarea.entity.Hadoop;
 import com.blueskyarea.entity.HadoopApp;
 import com.google.api.client.http.GenericUrl;
@@ -27,12 +29,12 @@ import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
 
 public class JobHistoryGenerator {
-	private static final Logger LOG = Logger.getLogger("JobHistoryGenerator");
+	private static final Logger LOG = LoggerFactory.getLogger("JobHistoryGenerator");
 
-	private HadoopJobHistoryConfig config;
+	private HadoopResultSaverConfig config;
 	private String hadoopRestApi;
 
-	public JobHistoryGenerator(HadoopJobHistoryConfig config) {
+	public JobHistoryGenerator(HadoopResultSaverConfig config) {
 		this.config = config;
 	}
 
@@ -69,9 +71,12 @@ public class JobHistoryGenerator {
 		try {
 			Gson gson = new Gson();
 			List<String> lines = Files.lines(
-					Paths.get(HadoopJobHistory.historyFilePath),
+					Paths.get(HadoopResultSaver.historyFilePath),
 					StandardCharsets.UTF_8).collect(Collectors.toList());
 			Type listType = new TypeToken<List<HadoopApp>>(){}.getType();
+			if (lines.isEmpty()) {
+				return new ArrayList<>();
+			}
 			return gson.fromJson(lines.get(0), listType);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -83,7 +88,7 @@ public class JobHistoryGenerator {
 		try {
 			Gson gson = new Gson();
 			List<String> lines = Files.lines(
-					Paths.get(HadoopJobHistory.historyFilePath),
+					Paths.get(HadoopResultSaver.historyFilePath),
 					StandardCharsets.UTF_8).collect(Collectors.toList());
 			Type listType = new TypeToken<List<HadoopApp>>(){}.getType();
 			List<HadoopApp> list = gson.fromJson(lines.get(0), listType);
@@ -112,6 +117,11 @@ public class JobHistoryGenerator {
 		}
 		Hadoop originalJson = gson.fromJson(response.parseAsString(),
 				Hadoop.class);
+		
+		if (originalJson == null || originalJson.hadoopApps == null) {
+			return gson.toJson(latestHistory);
+		}
+		
 		for (HadoopApp hadoopApp : originalJson.hadoopApps.hadoopApp) {
 			HadoopApp app = new HadoopApp();
 			app.id = createIdWithTrackingUrl(hadoopApp);
@@ -141,6 +151,7 @@ public class JobHistoryGenerator {
 			app.clusterUsagePercentage = hadoopApp.clusterUsagePercentage;
 			latestHistory.add(app);
 		}
+		
 		return gson.toJson(latestHistory);
 	}
 
