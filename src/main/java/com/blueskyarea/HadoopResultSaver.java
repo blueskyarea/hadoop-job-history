@@ -24,20 +24,24 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.blueskyarea.config.HadoopResultSaverConfig;
+import com.blueskyarea.config.HadoopResultSaverConfig2;
 import com.blueskyarea.generator.JobHistoryGenerator;
 import com.blueskyarea.generator.JobHistoryReader;
 import com.blueskyarea.thread.JobHistoryThread;
 
 public class HadoopResultSaver {
 	private static final Logger LOG = LoggerFactory.getLogger("HadoopResultSaver");
-	private static HadoopResultSaverConfig config = HadoopResultSaverConfig
-			.getInstance();
+	//private static HadoopResultSaverConfig config = HadoopResultSaverConfig
+	//		.getInstance();
+	private static HadoopResultSaverConfig2 config2 = HadoopResultSaverConfig2.getInstance();
 	private static JobHistoryReader historyReader = new JobHistoryReader();
-	public static JobHistoryGenerator realtimeGenerator = new JobHistoryGenerator(config);
+	public static JobHistoryGenerator realtimeGenerator = new JobHistoryGenerator(config2);
 	public static String thisJarDirPath = HadoopResultSaver.getJarPath();
 	public static String historyFilePath = thisJarDirPath + "/../history.txt";
 
-	public static void main(String[] args) throws InterruptedException {		
+	public static void main(String[] args) throws InterruptedException {
+		new HadoopResultSaverConfig2();
+		
 		// create servlet
 		ServletContextHandler servletHandler = new ServletContextHandler(
 				ServletContextHandler.SESSIONS);
@@ -65,7 +69,8 @@ public class HadoopResultSaver {
 				httpConfig);
 		final ServerConnector httpConnector = new ServerConnector(jettyServer,
 				httpConnFactory);
-		httpConnector.setPort(config.getAppPort());
+		//httpConnector.setPort(config.getAppPort());
+		httpConnector.setPort(config2.getAppPort());
 		jettyServer.setConnectors(new Connector[] { httpConnector });
 
 		// start server

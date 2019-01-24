@@ -1,5 +1,6 @@
 package com.blueskyarea.generator;
 
+import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
@@ -16,6 +17,7 @@ import org.slf4j.LoggerFactory;
 
 import com.blueskyarea.HadoopResultSaver;
 import com.blueskyarea.config.HadoopResultSaverConfig;
+import com.blueskyarea.config.HadoopResultSaverConfig2;
 import com.blueskyarea.entity.Hadoop;
 import com.blueskyarea.entity.HadoopApp;
 import com.google.api.client.http.GenericUrl;
@@ -31,10 +33,10 @@ import com.google.gson.reflect.TypeToken;
 public class JobHistoryGenerator {
 	private static final Logger LOG = LoggerFactory.getLogger("JobHistoryGenerator");
 
-	private HadoopResultSaverConfig config;
+	private HadoopResultSaverConfig2 config;
 	private String hadoopRestApi;
 
-	public JobHistoryGenerator(HadoopResultSaverConfig config) {
+	public JobHistoryGenerator(HadoopResultSaverConfig2 config) {
 		this.config = config;
 	}
 
@@ -69,7 +71,12 @@ public class JobHistoryGenerator {
 	
 	protected List<HadoopApp> readLatestHistory() {
 		try {
-			Gson gson = new Gson();
+			// if history is not existing just return empty list
+			File file = new File(HadoopResultSaver.historyFilePath);
+			if (!file.exists()) {
+				return new ArrayList<>();
+			}
+			
 			List<String> lines = Files.lines(
 					Paths.get(HadoopResultSaver.historyFilePath),
 					StandardCharsets.UTF_8).collect(Collectors.toList());
@@ -77,6 +84,8 @@ public class JobHistoryGenerator {
 			if (lines.isEmpty()) {
 				return new ArrayList<>();
 			}
+			
+			Gson gson = new Gson();
 			return gson.fromJson(lines.get(0), listType);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -131,6 +140,7 @@ public class JobHistoryGenerator {
 			}
 			LOG.info("This id is new: " + hadoopApp.id);
 			app.startedTime = calcStartedTime(hadoopApp.startedTime);
+			app.finishedTime = calcStartedTime(hadoopApp.finishedTime);
 			app.queue = hadoopApp.queue;
 			app.name = hadoopApp.name;
 			app.state = hadoopApp.state;

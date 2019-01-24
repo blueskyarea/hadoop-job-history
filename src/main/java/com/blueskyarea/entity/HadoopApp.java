@@ -5,6 +5,9 @@ import com.google.gson.annotations.SerializedName;
 public class HadoopApp {
 	@SerializedName("startedTime")
 	public String startedTime;
+	
+	@SerializedName("finishedTime")
+	public String finishedTime;
 
 	@SerializedName("id")
 	public String id;
