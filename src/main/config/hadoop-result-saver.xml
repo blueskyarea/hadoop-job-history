@@ -8,4 +8,6 @@
 <entry key="hadoop.status">accepted,running,finished,failed,killed</entry>
 <entry key="hadoop.status.history">finished,failed,killed</entry>
 <entry key="hadoop.user">root</entry>
+<entry key="history.file.path">/tmp/hadoop-history.txt</entry>
+<entry key="interval.get.history.millisec">10000</entry>
 </properties>

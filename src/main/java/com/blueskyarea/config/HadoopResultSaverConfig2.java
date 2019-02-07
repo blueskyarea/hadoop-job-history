@@ -60,4 +60,12 @@ public class HadoopResultSaverConfig2 {
 	public String getHadoopStatusHistory() {
 		return propMap.get("hadoop.status.history");
 	}
+	
+	public String getHistoryFilePath() {
+		return propMap.get("history.file.path");
+	}
+	
+	public int getIntervalGetHistory() {
+		return Integer.valueOf(propMap.get("interval.get.history.millisec"));
+	}
 }

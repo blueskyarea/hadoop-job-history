@@ -37,10 +37,10 @@ public class HadoopResultSaver {
 	private static JobHistoryReader historyReader = new JobHistoryReader();
 	public static JobHistoryGenerator realtimeGenerator = new JobHistoryGenerator(config2);
 	public static String thisJarDirPath = HadoopResultSaver.getJarPath();
-	public static String historyFilePath = thisJarDirPath + "/../history.txt";
+	public static String historyFilePath = config2.getHistoryFilePath();
 
 	public static void main(String[] args) throws InterruptedException {
-		new HadoopResultSaverConfig2();
+		//new HadoopResultSaverConfig2();
 		
 		// create servlet
 		ServletContextHandler servletHandler = new ServletContextHandler(
@@ -78,7 +78,7 @@ public class HadoopResultSaver {
 			//jettyServer.start();
 			//(new Thread(new JobHistoryThread(10))).start();
 	        ExecutorService s = Executors.newSingleThreadExecutor();
-	        s.submit(new JobHistoryThread());
+	        s.submit(new JobHistoryThread(config2));
 			
 			// start thread for getting history
 			/*Runnable r = () -> {
@@ -128,7 +128,7 @@ public class HadoopResultSaver {
 			final PrintWriter out = resp.getWriter();
 			switch (dn) {
 			case "real":
-				out.println(realtimeGenerator.startToGetList());
+				//out.println(realtimeGenerator.startToGetList());
 				out.close();
 				break;
 			case "hist":

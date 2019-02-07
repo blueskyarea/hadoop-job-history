@@ -3,6 +3,7 @@ package com.blueskyarea.generator;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Type;
+import java.net.NoRouteToHostException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -20,6 +21,7 @@ import com.blueskyarea.config.HadoopResultSaverConfig;
 import com.blueskyarea.config.HadoopResultSaverConfig2;
 import com.blueskyarea.entity.Hadoop;
 import com.blueskyarea.entity.HadoopApp;
+import com.blueskyarea.exception.HadoopResultSaverException;
 import com.google.api.client.http.GenericUrl;
 import com.google.api.client.http.HttpRequest;
 import com.google.api.client.http.HttpRequestFactory;
@@ -40,7 +42,7 @@ public class JobHistoryGenerator {
 		this.config = config;
 	}
 
-	public String startToGetList() throws JsonSyntaxException, IOException {
+	public String startToGetList() throws JsonSyntaxException, IOException, HadoopResultSaverException {
 		this.hadoopRestApi = "http://" + config.getRmHost() + ":"
 				+ config.getRmPort() + "/ws/v1/cluster/apps?states="
 				+ config.getHadoopStatus() + "&user=" + config.getHadoopUser();
@@ -48,7 +50,7 @@ public class JobHistoryGenerator {
 		return convertToView(response, new ArrayList<>());
 	}
 
-	public String startToGetHistory() throws IOException {
+	public String startToGetHistory() throws IOException, HadoopResultSaverException {
 		this.hadoopRestApi = "http://" + config.getRmHost() + ":"
 				+ config.getRmPort() + "/ws/v1/cluster/apps?states="
 				+ config.getHadoopStatusHistory() + "&user="
@@ -58,7 +60,7 @@ public class JobHistoryGenerator {
 		return convertToView(response, latestHistory);
 	}
 
-	protected HttpResponse getRequestHttpContents() throws IOException {
+	protected HttpResponse getRequestHttpContents() throws IOException, HadoopResultSaverException {
 		LOG.info("hadoopRestApi:" + hadoopRestApi);
 		HttpTransport transport = null;
 		transport = new NetHttpTransport.Builder().build();
@@ -66,7 +68,11 @@ public class JobHistoryGenerator {
 		HttpRequestFactory factory = transport.createRequestFactory();
 		GenericUrl genericUrl = new GenericUrl(hadoopRestApi);
 		HttpRequest request = factory.buildGetRequest(genericUrl);
-		return request.execute();
+		try {
+			return request.execute();
+		} catch (NoRouteToHostException e) {
+			throw new HadoopResultSaverException(e.getMessage());
+		}
 	}
 	
 	protected List<HadoopApp> readLatestHistory() {
@@ -118,7 +124,7 @@ public class JobHistoryGenerator {
 		Gson gson = new Gson();
 		//String latestId = "0";
 		List<String> idList = new ArrayList<>();
-		if (latestHistory.size() > 1) {
+		if (latestHistory.size() > 0) {
 			latestHistory.forEach(history -> {
 				idList.add(history.id);
 			});
@@ -135,7 +141,7 @@ public class JobHistoryGenerator {
 			HadoopApp app = new HadoopApp();
 			app.id = createIdWithTrackingUrl(hadoopApp);
 			if (idList.contains(app.id)) {
-				LOG.debug("This id is already saved: " + hadoopApp.id);
+				LOG.info("This id is already saved: " + hadoopApp.id);
 				continue;
 			}
 			LOG.info("This id is new: " + hadoopApp.id);
