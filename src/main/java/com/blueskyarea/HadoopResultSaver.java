@@ -50,6 +50,7 @@ public class HadoopResultSaver {
 
 		// specify static contents
 		final ResourceHandler resourceHandler = new ResourceHandler();
+		LOG.info("thisJarDirPath : " + thisJarDirPath);
 		resourceHandler.setResourceBase(thisJarDirPath + "/view");
 		resourceHandler.setDirectoriesListed(false);
 		resourceHandler.setWelcomeFiles(new String[] { "index.html" });
@@ -100,6 +101,8 @@ public class HadoopResultSaver {
 			//thread.start();
 			//jettyServer.join();
 			//thread.join();
+	        jettyServer.start();
+	        jettyServer.join();
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
