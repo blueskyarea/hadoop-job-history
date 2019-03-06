@@ -10,10 +10,12 @@ function hideAllTable() {
 }
 
 function getData() {
+	var selectApp = $('[name=applications]').val();
 	$.ajax({
 		type : 'GET',
-		url : "http://" + location.hostname + ":" + portNo + "/api?dn=real"
+		url : "http://" + location.hostname + ":" + portNo + "/api?dn=hist&ap=" + selectApp
 	}).done(function(data) {
+		createChart(data, selectApp);
 		createTable(data);
 	}).fail(function(data) {
 		handlingOfFailedToLoad();
@@ -22,6 +24,72 @@ function getData() {
 
 function handlingOfFailedToLoad() {
 	$("#msgFailToGetData").show();
+}
+
+function createChart(data, selectApp) {
+	if(data.length == 0){
+   		return;
+ 	}
+	var startedTimes = [];
+	var elapsedTimes = [];
+	for (i = 0; i < data.length; i++) {
+		startedTimes.push(data[i]["startedTime"]);
+		elapsedTimes.push(convert2Sec(data[i]["elapsedTime"]));
+		console.log(convert2Sec(data[i]["elapsedTime"]));
+	}
+	
+	var ctx = document.getElementById('myChart').getContext('2d');
+    var myChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: startedTimes,
+            datasets: [{
+                label: selectApp,
+                type: "line",
+                fill: false,
+                lineTension: 0,
+                data: elapsedTimes,
+                borderColor: "rgb(154, 162, 235)",
+                yAxisID: "y-axis-1",
+            }]
+        },
+        options: {
+            tooltips: {
+                mode: 'nearest',
+                intersect: false,
+            },
+            responsive: true,
+            scales: {
+                yAxes: [{
+                    id: "y-axis-1",
+                    type: "linear",
+                    position: "left",
+                    ticks: {
+                        max: 100,
+                        min: 0,
+                        stepSize: 10
+                    },
+                }, {
+                    id: "y-axis-2",
+                    type: "linear",
+                    position: "right",
+                    ticks: {
+                        max: 200,
+                        min: 0,
+                        stepSize: 5
+                    },
+                    gridLines: {
+                        drawOnChartArea: false,
+                    },
+                }],
+            },
+        }
+    });
+}
+
+function convert2Sec(t) {
+	var hms = t.split(':');
+	return Number(hms[0]) * 3600 + Number(hms[1]) * 60 + Number(hms[2]);
 }
 
 function createTable(data) {

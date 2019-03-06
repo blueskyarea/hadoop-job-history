@@ -124,7 +124,9 @@ public class HadoopResultSaver {
 				throws ServletException, IOException {
 			LOG.info("requestUrl: " + req.getRequestURI());
 			final String dn = req.getParameter("dn");
+			final String ap = req.getParameter("ap");
 			LOG.info("dn: " + dn);
+			LOG.info("ap: " + ap);
 			resp.addHeader("Access-Control-Allow-Origin", "*");
 			resp.addHeader("Access-Control-Allow-Headers", "Content-Type");
 			resp.setContentType("application/json; charset=UTF-8");
@@ -135,7 +137,7 @@ public class HadoopResultSaver {
 				out.close();
 				break;
 			case "hist":
-				out.println(historyReader.readLatestHistoryAsJson());
+				out.println(historyReader.readLatestHistoryAsJson(ap));
 				out.close();
 				break;
 			default:
