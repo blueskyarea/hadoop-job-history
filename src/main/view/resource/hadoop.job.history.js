@@ -1,5 +1,6 @@
 var init = true;
 var portNo = 8080;
+var myChart;
 
 $(document).ready(function() {
 	getData();
@@ -11,9 +12,18 @@ function hideAllTable() {
 
 function getData() {
 	var selectApp = $('[name=applications]').val();
+	var fromDate = $('#from-date').val();
+	var fromTime = $('#from-time').val();
+	var toDate = $('#to-date').val();
+	var toTime = $('#to-time').val();
+	console.log(fromDate);
+	console.log(fromTime);
 	$.ajax({
 		type : 'GET',
-		url : "http://" + location.hostname + ":" + portNo + "/api?dn=hist&ap=" + selectApp
+		url : "http://" + location.hostname + ":" + portNo 
+		+ "/api?dn=hist&ap=" + selectApp
+		+ "&fromd=" + fromDate + "&fromt=" + fromTime
+		+ "&tod=" + toDate + "&tot=" + toTime
 	}).done(function(data) {
 		createChart(data, selectApp);
 		createTable(data);
@@ -35,11 +45,13 @@ function createChart(data, selectApp) {
 	for (i = 0; i < data.length; i++) {
 		startedTimes.push(data[i]["startedTime"]);
 		elapsedTimes.push(convert2Sec(data[i]["elapsedTime"]));
-		console.log(convert2Sec(data[i]["elapsedTime"]));
 	}
 	
 	var ctx = document.getElementById('myChart').getContext('2d');
-    var myChart = new Chart(ctx, {
+	if (myChart) {
+	    myChart.destroy();
+	}
+    myChart = new Chart(ctx, {
         type: 'bar',
         data: {
             labels: startedTimes,
@@ -68,18 +80,6 @@ function createChart(data, selectApp) {
                         max: 100,
                         min: 0,
                         stepSize: 10
-                    },
-                }, {
-                    id: "y-axis-2",
-                    type: "linear",
-                    position: "right",
-                    ticks: {
-                        max: 200,
-                        min: 0,
-                        stepSize: 5
-                    },
-                    gridLines: {
-                        drawOnChartArea: false,
                     },
                 }],
             },
@@ -145,7 +145,7 @@ function createTable(data) {
 	
 	$("#last-update").text(date);
 	if (init) {
-		setInterval(autoUpdate, 10000);
+		setInterval(autoUpdate, 60000);
 	}	
 }
 

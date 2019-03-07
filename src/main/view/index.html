@@ -21,6 +21,13 @@
 <option value="Spark Pi2">Spark Pi2</option>
 <option value="Spark Pi3">Spark Pi3</option>
 </select>
+<p style="display:inline;">from</p>
+<input type="date" id="from-date" name="from-date" value="2019-01-01">
+<input type="time" id="from-time" name="from-time" value="00:00">
+<p style="display:inline;">to</p>
+<input type="date" id="to-date" name="to-date" value="2019-12-31">
+<input type="time" id="to-time" name="to-time" value="23:59">
+<input type="button" value="GO" onclick="getData();"/>
 <canvas id="myChart"></canvas>
 <div id="section">
 <table id='applicationTable' class="display nowrap" cellspacing="0" width="100%"></table>

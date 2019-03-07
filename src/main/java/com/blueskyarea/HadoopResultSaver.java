@@ -125,8 +125,13 @@ public class HadoopResultSaver {
 			LOG.info("requestUrl: " + req.getRequestURI());
 			final String dn = req.getParameter("dn");
 			final String ap = req.getParameter("ap");
+			final String fromDateTime = req.getParameter("fromd").replace("-", "/") + " " + req.getParameter("fromt");
+			final String toDateTime = req.getParameter("tod").replace("-", "/") + " " + req.getParameter("tot");
+			
 			LOG.info("dn: " + dn);
 			LOG.info("ap: " + ap);
+			LOG.info("fromDateTime: " + fromDateTime);
+			LOG.info("toDateTime: " + toDateTime);
 			resp.addHeader("Access-Control-Allow-Origin", "*");
 			resp.addHeader("Access-Control-Allow-Headers", "Content-Type");
 			resp.setContentType("application/json; charset=UTF-8");
@@ -137,7 +142,7 @@ public class HadoopResultSaver {
 				out.close();
 				break;
 			case "hist":
-				out.println(historyReader.readLatestHistoryAsJson(ap));
+				out.println(historyReader.readLatestHistoryAsJson(ap, fromDateTime, toDateTime));
 				out.close();
 				break;
 			default:

@@ -17,12 +17,12 @@ public class JobHistoryReader {
 	public JobHistoryReader() {
 	}
 	
-	public String readLatestHistoryAsJson(String ap) {
+	public String readLatestHistoryAsJson(String ap, String from, String to) {
 		Gson gson = new Gson();
-		return gson.toJson(readLatestHistory(ap));
+		return gson.toJson(readLatestHistory(ap, from, to));
 	}
 	
-	public List<HadoopApp> readLatestHistory(String ap) {
+	public List<HadoopApp> readLatestHistory(String ap, String from, String to) {
 		try {
 			Gson gson = new Gson();
 			List<String> lines = Files.lines(
@@ -31,10 +31,19 @@ public class JobHistoryReader {
 			Type listType = new TypeToken<List<HadoopApp>>(){}.getType();
 			//return gson.fromJson(lines.get(0), listType);
 			List<HadoopApp> list = gson.fromJson(lines.get(0), listType);
-			return list.stream().filter(o -> o.name.equals(ap)).collect(Collectors.toList());
+			return list.stream().filter(d -> d.name.equals(ap))
+					.filter(d -> compareTime(from, d.startedTime) && compareTime(d.startedTime, to))
+					.collect(Collectors.toList());
 		} catch (Exception e) {
 			e.printStackTrace();
 			return new ArrayList<>();
 		}
+	}
+	
+	public boolean compareTime(String timeA, String timeB) {
+		if (timeB.compareTo(timeA) >= 0)  {
+			return true;
+		}
+		return false;
 	}
 }
