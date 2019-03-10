@@ -31,8 +31,6 @@ import com.blueskyarea.thread.JobHistoryThread;
 
 public class HadoopResultSaver {
 	private static final Logger LOG = LoggerFactory.getLogger("HadoopResultSaver");
-	//private static HadoopResultSaverConfig config = HadoopResultSaverConfig
-	//		.getInstance();
 	private static HadoopResultSaverConfig2 config2 = HadoopResultSaverConfig2.getInstance();
 	private static JobHistoryReader historyReader = new JobHistoryReader();
 	public static JobHistoryGenerator realtimeGenerator = new JobHistoryGenerator(config2);
@@ -40,8 +38,6 @@ public class HadoopResultSaver {
 	public static String historyFilePath = config2.getHistoryFilePath();
 
 	public static void main(String[] args) throws InterruptedException {
-		//new HadoopResultSaverConfig2();
-		
 		// create servlet
 		ServletContextHandler servletHandler = new ServletContextHandler(
 				ServletContextHandler.SESSIONS);
@@ -70,37 +66,13 @@ public class HadoopResultSaver {
 				httpConfig);
 		final ServerConnector httpConnector = new ServerConnector(jettyServer,
 				httpConnFactory);
-		//httpConnector.setPort(config.getAppPort());
 		httpConnector.setPort(config2.getAppPort());
 		jettyServer.setConnectors(new Connector[] { httpConnector });
 
 		// start server
 		try {
-			//jettyServer.start();
-			//(new Thread(new JobHistoryThread(10))).start();
 	        ExecutorService s = Executors.newSingleThreadExecutor();
 	        s.submit(new JobHistoryThread(config2));
-			
-			// start thread for getting history
-			/*Runnable r = () -> {
-				//while (true) {
-					try {
-						String result = realtimeGenerator.startToGetHistory();
-						File file = new File(historyFilePath);
-						FileWriter filewriter = new FileWriter(file);
-						filewriter.write(result);
-						filewriter.close();
-						Thread.sleep(10000L);
-					} catch (Exception e) {
-						// nothing to do
-					}
-				//}
-			};*/
-
-			//Thread thread = new Thread(r);
-			//thread.start();
-			//jettyServer.join();
-			//thread.join();
 	        jettyServer.start();
 	        jettyServer.join();
 		} catch (Exception e) {
