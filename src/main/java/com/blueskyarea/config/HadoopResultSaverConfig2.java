@@ -65,6 +65,18 @@ public class HadoopResultSaverConfig2 {
 		return propMap.get("history.file.path");
 	}
 	
+	public Boolean getProxyUse() {
+		return Boolean.valueOf(propMap.get("proxy.use"));
+	}
+	
+	public String getProxyHost() {
+		return propMap.get("proxy.host");
+	}
+	
+	public int getProxyPort() {
+		return Integer.valueOf(propMap.get("proxy.port"));
+	}
+	
 	public int getIntervalGetHistory() {
 		return Integer.valueOf(propMap.get("interval.get.history.millisec"));
 	}

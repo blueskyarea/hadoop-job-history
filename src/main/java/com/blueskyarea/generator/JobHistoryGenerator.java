@@ -3,7 +3,9 @@ package com.blueskyarea.generator;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Type;
+import java.net.InetSocketAddress;
 import java.net.NoRouteToHostException;
+import java.net.Proxy;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -62,8 +64,16 @@ public class JobHistoryGenerator {
 
 	protected HttpResponse getRequestHttpContents() throws IOException, HadoopResultSaverException {
 		LOG.info("hadoopRestApi:" + hadoopRestApi);
+		Boolean proxyUse = config.getProxyUse();
+		String proxyHost = config.getProxyHost();
+        int proxyPort = config.getProxyPort();
 		HttpTransport transport = null;
-		transport = new NetHttpTransport.Builder().build();
+		if (proxyUse) {
+			Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxyHost, proxyPort));
+			transport = new NetHttpTransport.Builder().setProxy(proxy).build();
+		} else {
+			transport = new NetHttpTransport.Builder().build();
+		}
 
 		HttpRequestFactory factory = transport.createRequestFactory();
 		GenericUrl genericUrl = new GenericUrl(hadoopRestApi);
@@ -158,8 +168,8 @@ public class JobHistoryGenerator {
 			LOG.info("elapsedTime: " + elapedTime);
 			LOG.info("Long.parseLong(hadoopApp.memorySeconds)" + Long.parseLong(hadoopApp.memorySeconds));
 			LOG.info("Long.parseLong(hadoopApp.vcoreSeconds)" + Long.parseLong(hadoopApp.vcoreSeconds));
-			app.allocatedMBPerSeconds = String.valueOf(Long.parseLong(hadoopApp.memorySeconds) / Long.parseLong(DateFormatUtils.format(elapedTime, "ss")));
-			app.allocatedVCoresPerSeconds = String.valueOf(Long.parseLong(hadoopApp.vcoreSeconds) / Long.parseLong(DateFormatUtils.format(elapedTime, "ss")));
+			//app.allocatedMBPerSeconds = String.valueOf(Long.parseLong(hadoopApp.memorySeconds) / Long.parseLong(DateFormatUtils.format(elapedTime, "ss")));
+			//app.allocatedVCoresPerSeconds = String.valueOf(Long.parseLong(hadoopApp.vcoreSeconds) / Long.parseLong(DateFormatUtils.format(elapedTime, "ss")));
 			app.allocatedMB = hadoopApp.allocatedMB;
 			app.allocatedVCores = hadoopApp.allocatedVCores;
 			app.runningContainers = hadoopApp.runningContainers;

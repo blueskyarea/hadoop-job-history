@@ -8,6 +8,9 @@
 <entry key="hadoop.status">accepted,running,finished,failed,killed</entry>
 <entry key="hadoop.status.history">finished,failed,killed</entry>
 <entry key="hadoop.user">root</entry>
+<entry key="proxy.use">false</entry>
+<entry key="proxy.host"></entry>
+<entry key="proxy.port"></entry>
 <entry key="history.file.path">/tmp/hadoop-history.txt</entry>
 <entry key="interval.get.history.millisec">60000</entry>
 </properties>
