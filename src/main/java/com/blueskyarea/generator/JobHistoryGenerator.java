@@ -1,6 +1,8 @@
 package com.blueskyarea.generator;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.net.InetSocketAddress;
@@ -9,9 +11,14 @@ import java.net.Proxy;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.time.DateFormatUtils;
@@ -65,10 +72,10 @@ public class JobHistoryGenerator {
 	protected HttpResponse getRequestHttpContents() throws IOException, HadoopResultSaverException {
 		LOG.info("hadoopRestApi:" + hadoopRestApi);
 		Boolean proxyUse = config.getProxyUse();
-		String proxyHost = config.getProxyHost();
-        int proxyPort = config.getProxyPort();
 		HttpTransport transport = null;
 		if (proxyUse) {
+			String proxyHost = config.getProxyHost();
+	        int proxyPort = config.getProxyPort();
 			Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxyHost, proxyPort));
 			transport = new NetHttpTransport.Builder().setProxy(proxy).build();
 		} else {
@@ -133,13 +140,25 @@ public class JobHistoryGenerator {
 			throws JsonSyntaxException, IOException {
 		Gson gson = new Gson();
 		//String latestId = "0";
+		
+		// filter by epoctime
+		long epochToKeepHistory = Instant.now().minus(config.getDaysToKeepHistory(), ChronoUnit.DAYS).toEpochMilli();
+		List<HadoopApp> filteredLatestHistory =
+				latestHistory.stream().filter(hist -> Long.valueOf(hist.startedTime) > epochToKeepHistory).collect(Collectors.toList());
+		
 		List<String> idList = new ArrayList<>();
-		if (latestHistory.size() > 0) {
-			latestHistory.forEach(history -> {
+		Set<String> nameSet = new HashSet<>();
+		if (filteredLatestHistory.size() > 0) {
+			filteredLatestHistory.forEach(history -> {
 				idList.add(history.id);
+				nameSet.add(history.name);
 			});
 			//latestId = latestHistory.get(latestHistory.size() - 1).id;
 		}
+		
+		// save name set
+		saveNameList(nameSet);
+		
 		Hadoop originalJson = gson.fromJson(response.parseAsString(),
 				Hadoop.class);
 		
@@ -175,10 +194,22 @@ public class JobHistoryGenerator {
 			app.runningContainers = hadoopApp.runningContainers;
 			app.queueUsagePercentage = hadoopApp.queueUsagePercentage;
 			app.clusterUsagePercentage = hadoopApp.clusterUsagePercentage;
-			latestHistory.add(app);
+			filteredLatestHistory.add(app);
 		}
 		
-		return gson.toJson(latestHistory);
+		return gson.toJson(filteredLatestHistory);
+	}
+	
+	protected void saveNameList(Set<String> nameSet) throws IOException {
+		BufferedWriter out = new BufferedWriter(new FileWriter(HadoopResultSaver.thisJarDirPath + "/apps.txt"));
+		Iterator<String> it = nameSet.iterator();
+		System.out.println(nameSet.size());
+		nameSet.forEach(System.out::println);
+		while(it.hasNext()) {
+		    out.write(it.next());
+		    out.newLine();
+		}
+		out.close();
 	}
 
 	protected String calcStartedTime(String startedTimeMin) {

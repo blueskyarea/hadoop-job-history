@@ -13,4 +13,5 @@
 <entry key="proxy.port"></entry>
 <entry key="history.file.path">/tmp/hadoop-history.txt</entry>
 <entry key="interval.get.history.millisec">60000</entry>
+<entry key="days.to.keep.history">7</entry>
 </properties>

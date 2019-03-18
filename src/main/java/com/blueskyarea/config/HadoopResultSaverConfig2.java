@@ -80,4 +80,8 @@ public class HadoopResultSaverConfig2 {
 	public int getIntervalGetHistory() {
 		return Integer.valueOf(propMap.get("interval.get.history.millisec"));
 	}
+	
+	public int getDaysToKeepHistory() {
+		return Integer.valueOf(propMap.get("days.to.keep.history"));
+	}
 }
