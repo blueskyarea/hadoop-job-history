@@ -11,9 +11,11 @@ import java.net.Proxy;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -21,15 +23,22 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+
+
+
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+
+
 
 import com.blueskyarea.HadoopResultSaver;
 import com.blueskyarea.config.HadoopResultSaverConfig;
 import com.blueskyarea.config.HadoopResultSaverConfig2;
 import com.blueskyarea.entity.Hadoop;
 import com.blueskyarea.entity.HadoopApp;
+import com.blueskyarea.entity.HadoopHistory;
 import com.blueskyarea.exception.HadoopResultSaverException;
 import com.google.api.client.http.GenericUrl;
 import com.google.api.client.http.HttpRequest;
@@ -109,7 +118,13 @@ public class JobHistoryGenerator {
 			}
 			
 			Gson gson = new Gson();
-			return gson.fromJson(lines.get(0), listType);
+			Type historyType = new TypeToken<HadoopHistory>(){}.getType();
+			HadoopHistory hist = gson.fromJson(lines.get(0), historyType);
+			System.out.println("-------------------");
+			System.out.println(hist.histories.get(0).startedTime);
+			System.out.println("-------------------");
+			return hist.histories;
+			//return gson.fromJson(hist.histories, listType);
 		} catch (Exception e) {
 			e.printStackTrace();
 			return new ArrayList<>();
@@ -144,7 +159,18 @@ public class JobHistoryGenerator {
 		// filter by epoctime
 		long epochToKeepHistory = Instant.now().minus(config.getDaysToKeepHistory(), ChronoUnit.DAYS).toEpochMilli();
 		List<HadoopApp> filteredLatestHistory =
-				latestHistory.stream().filter(hist -> Long.valueOf(hist.startedTime) > epochToKeepHistory).collect(Collectors.toList());
+				latestHistory.stream().filter(hist -> {
+					long epoch = 0;
+					try {
+						SimpleDateFormat df = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+						Date date;
+						date = df.parse(hist.startedTime);
+						epoch = date.getTime();
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+					return epoch > epochToKeepHistory;
+				}).collect(Collectors.toList());
 		
 		List<String> idList = new ArrayList<>();
 		Set<String> nameSet = new HashSet<>();
@@ -197,7 +223,9 @@ public class JobHistoryGenerator {
 			filteredLatestHistory.add(app);
 		}
 		
-		return gson.toJson(filteredLatestHistory);
+		HadoopHistory hist = new HadoopHistory(String.join(",", nameSet), filteredLatestHistory);
+		
+		return gson.toJson(hist);
 	}
 	
 	protected void saveNameList(Set<String> nameSet) throws IOException {

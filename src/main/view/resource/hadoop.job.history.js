@@ -37,14 +37,17 @@ function handlingOfFailedToLoad() {
 }
 
 function createChart(data, selectApp) {
+	console.log(data);
 	if(data.length == 0){
    		return;
  	}
 	var startedTimes = [];
 	var elapsedTimes = [];
-	for (i = 0; i < data.length; i++) {
-		startedTimes.push(data[i]["startedTime"]);
-		elapsedTimes.push(convert2Sec(data[i]["elapsedTime"]));
+	var apps = data["apps"];
+	var histries = data["histories"];
+	for (i = 0; i < histries.length; i++) {
+		startedTimes.push(histries[i]["startedTime"]);
+		elapsedTimes.push(convert2Sec(histries[i]["elapsedTime"]));
 	}
 	
 	var ctx = document.getElementById('myChart').getContext('2d');
