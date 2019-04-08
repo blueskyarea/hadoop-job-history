@@ -6,17 +6,22 @@ import java.io.FileWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.blueskyarea.HadoopResultSaver;
-import com.blueskyarea.config.HadoopResultSaverConfig2;
+import com.blueskyarea.HadoopJobHistorySaver;
+import com.blueskyarea.config.HadoopResultSaverConfig;
 import com.blueskyarea.exception.HadoopResultSaverException;
+import com.blueskyarea.generator.JobHistoryGenerator;
 
 public class JobHistoryThread implements Runnable {
 	
 	private static final Logger LOG = LoggerFactory.getLogger("JobHistoryThread");
-	private HadoopResultSaverConfig2 config;
+	private JobHistoryGenerator historyGenerator;
+	private HadoopResultSaverConfig config;
+	private String historyFilePath;
 	
-	public JobHistoryThread(HadoopResultSaverConfig2 config2) {
-		this.config = config2;
+	public JobHistoryThread(HadoopResultSaverConfig config) {
+		this.config = config;
+		this.historyGenerator = new JobHistoryGenerator(config);
+		this.historyFilePath = config.getHistoryFilePath();
 	}
 	
 	@Override
@@ -24,9 +29,9 @@ public class JobHistoryThread implements Runnable {
         while (true) {
             try {
             	Thread.sleep(config.getIntervalGetHistory());
-            	System.out.println("test");
-            	String result = HadoopResultSaver.realtimeGenerator.startToGetHistory();
-				File file = new File(HadoopResultSaver.historyFilePath);
+            	LOG.info("Getting history.");
+            	String result = historyGenerator.startToGetHistory();
+				File file = new File(historyFilePath);
 				FileWriter filewriter = new FileWriter(file);
 				filewriter.write(result);
 				filewriter.close();

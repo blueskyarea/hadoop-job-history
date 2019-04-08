@@ -33,9 +33,9 @@ import org.slf4j.LoggerFactory;
 
 
 
-import com.blueskyarea.HadoopResultSaver;
+import com.blueskyarea.HadoopJobHistorySaver;
 import com.blueskyarea.config.HadoopResultSaverConfig;
-import com.blueskyarea.config.HadoopResultSaverConfig2;
+import com.blueskyarea.config.HadoopResultSaverConfig;
 import com.blueskyarea.entity.Hadoop;
 import com.blueskyarea.entity.HadoopApp;
 import com.blueskyarea.entity.HadoopHistory;
@@ -53,11 +53,13 @@ import com.google.gson.reflect.TypeToken;
 public class JobHistoryGenerator {
 	private static final Logger LOG = LoggerFactory.getLogger("JobHistoryGenerator");
 
-	private HadoopResultSaverConfig2 config;
+	private HadoopResultSaverConfig config;
 	private String hadoopRestApi;
+	private String historyFilePath;
 
-	public JobHistoryGenerator(HadoopResultSaverConfig2 config) {
+	public JobHistoryGenerator(HadoopResultSaverConfig config) {
 		this.config = config;
+		this.historyFilePath = config.getHistoryFilePath();
 	}
 
 	public String startToGetList() throws JsonSyntaxException, IOException, HadoopResultSaverException {
@@ -104,13 +106,13 @@ public class JobHistoryGenerator {
 	protected List<HadoopApp> readLatestHistory() {
 		try {
 			// if history is not existing just return empty list
-			File file = new File(HadoopResultSaver.historyFilePath);
+			File file = new File(historyFilePath);
 			if (!file.exists()) {
 				return new ArrayList<>();
 			}
 			
 			List<String> lines = Files.lines(
-					Paths.get(HadoopResultSaver.historyFilePath),
+					Paths.get(historyFilePath),
 					StandardCharsets.UTF_8).collect(Collectors.toList());
 			Type listType = new TypeToken<List<HadoopApp>>(){}.getType();
 			if (lines.isEmpty()) {
@@ -135,7 +137,7 @@ public class JobHistoryGenerator {
 		try {
 			Gson gson = new Gson();
 			List<String> lines = Files.lines(
-					Paths.get(HadoopResultSaver.historyFilePath),
+					Paths.get(historyFilePath),
 					StandardCharsets.UTF_8).collect(Collectors.toList());
 			Type listType = new TypeToken<List<HadoopApp>>(){}.getType();
 			List<HadoopApp> list = gson.fromJson(lines.get(0), listType);
@@ -229,7 +231,7 @@ public class JobHistoryGenerator {
 	}
 	
 	protected void saveNameList(Set<String> nameSet) throws IOException {
-		BufferedWriter out = new BufferedWriter(new FileWriter(HadoopResultSaver.thisJarDirPath + "/apps.txt"));
+		BufferedWriter out = new BufferedWriter(new FileWriter("/tmp/apps.txt"));
 		Iterator<String> it = nameSet.iterator();
 		System.out.println(nameSet.size());
 		nameSet.forEach(System.out::println);

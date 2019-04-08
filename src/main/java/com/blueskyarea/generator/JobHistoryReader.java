@@ -8,7 +8,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.blueskyarea.HadoopResultSaver;
+import com.blueskyarea.HadoopJobHistorySaver;
+import com.blueskyarea.config.HadoopResultSaverConfig;
 import com.blueskyarea.entity.HadoopApp;
 import com.blueskyarea.entity.HadoopHistory;
 import com.blueskyarea.exception.HadoopResultSaverException;
@@ -16,7 +17,10 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
 public class JobHistoryReader {
-	public JobHistoryReader() {
+	private String historyFilePath;
+	
+	public JobHistoryReader(HadoopResultSaverConfig config) {
+		this.historyFilePath = config.getHistoryFilePath();
 	}
 	
 	public String readLatestHistoryAsJson(String ap, String from, String to) {
@@ -28,7 +32,7 @@ public class JobHistoryReader {
 		try {
 			Gson gson = new Gson();
 			List<String> lines = Files.lines(
-					Paths.get(HadoopResultSaver.historyFilePath),
+					Paths.get(historyFilePath),
 					StandardCharsets.UTF_8).collect(Collectors.toList());
 			Type listType = new TypeToken<List<HadoopApp>>(){}.getType();
 			//return gson.fromJson(lines.get(0), listType);
