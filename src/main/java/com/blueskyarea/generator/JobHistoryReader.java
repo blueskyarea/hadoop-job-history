@@ -12,7 +12,7 @@ import com.blueskyarea.HadoopJobHistorySaver;
 import com.blueskyarea.config.HadoopResultSaverConfig;
 import com.blueskyarea.entity.HadoopApp;
 import com.blueskyarea.entity.HadoopHistory;
-import com.blueskyarea.exception.HadoopResultSaverException;
+import com.blueskyarea.exception.HadoopJobHistorySaverException;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 

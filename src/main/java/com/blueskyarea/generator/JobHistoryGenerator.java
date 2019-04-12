@@ -26,9 +26,11 @@ import java.util.stream.Collectors;
 
 
 
+
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 
 
 
@@ -39,7 +41,8 @@ import com.blueskyarea.config.HadoopResultSaverConfig;
 import com.blueskyarea.entity.Hadoop;
 import com.blueskyarea.entity.HadoopApp;
 import com.blueskyarea.entity.HadoopHistory;
-import com.blueskyarea.exception.HadoopResultSaverException;
+import com.blueskyarea.exception.HadoopJobHistorySaverException;
+import com.blueskyarea.exception.HadoopJobHistorySaverRuntimeException;
 import com.google.api.client.http.GenericUrl;
 import com.google.api.client.http.HttpRequest;
 import com.google.api.client.http.HttpRequestFactory;
@@ -62,7 +65,7 @@ public class JobHistoryGenerator {
 		this.historyFilePath = config.getHistoryFilePath();
 	}
 
-	public String startToGetList() throws JsonSyntaxException, IOException, HadoopResultSaverException {
+	public String startToGetList() throws JsonSyntaxException, IOException, HadoopJobHistorySaverException {
 		this.hadoopRestApi = "http://" + config.getRmHost() + ":"
 				+ config.getRmPort() + "/ws/v1/cluster/apps?states="
 				+ config.getHadoopStatus() + "&user=" + config.getHadoopUser();
@@ -70,7 +73,7 @@ public class JobHistoryGenerator {
 		return convertToView(response, new ArrayList<>());
 	}
 
-	public String startToGetHistory() throws IOException, HadoopResultSaverException {
+	public String startToGetHistory() throws IOException, HadoopJobHistorySaverException {
 		this.hadoopRestApi = "http://" + config.getRmHost() + ":"
 				+ config.getRmPort() + "/ws/v1/cluster/apps?states="
 				+ config.getHadoopStatusHistory() + "&user="
@@ -80,7 +83,7 @@ public class JobHistoryGenerator {
 		return convertToView(response, latestHistory);
 	}
 
-	protected HttpResponse getRequestHttpContents() throws IOException, HadoopResultSaverException {
+	protected HttpResponse getRequestHttpContents() throws IOException {
 		LOG.info("hadoopRestApi:" + hadoopRestApi);
 		Boolean proxyUse = config.getProxyUse();
 		HttpTransport transport = null;
@@ -99,7 +102,7 @@ public class JobHistoryGenerator {
 		try {
 			return request.execute();
 		} catch (NoRouteToHostException e) {
-			throw new HadoopResultSaverException(e.getMessage());
+			throw new HadoopJobHistorySaverRuntimeException(e.getMessage());
 		}
 	}
 	

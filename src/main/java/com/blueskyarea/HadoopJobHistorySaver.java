@@ -24,6 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.blueskyarea.config.HadoopResultSaverConfig;
+import com.blueskyarea.exception.HadoopJobHistorySaverRuntimeException;
 import com.blueskyarea.generator.JobHistoryReader;
 import com.blueskyarea.thread.JobHistoryThread;
 
@@ -62,7 +63,7 @@ public class HadoopJobHistorySaver {
 			jettyServer.start();
 			jettyServer.join();
 		} catch (Exception e) {
-			throw new RuntimeException(e);
+			throw new HadoopJobHistorySaverRuntimeException(e.getMessage());
 		}
 	}
 
@@ -116,13 +117,14 @@ public class HadoopJobHistorySaver {
 		@Override
 		protected void doGet(HttpServletRequest req, HttpServletResponse resp)
 				throws ServletException, IOException {
-			LOG.info("requestUrl: " + req.getRequestURI());
+			LOG.info("Requested URL: " + req.getRequestURI());
 			final String dn = req.getParameter("dn");
 			final String ap = req.getParameter("ap");
-			final String fromDateTime = req.getParameter("fromd").replace("-",
-					"/")
+			final String fromDateTime = 
+					req.getParameter("fromd").replace("-", "/")
 					+ " " + req.getParameter("fromt");
-			final String toDateTime = req.getParameter("tod").replace("-", "/")
+			final String toDateTime = 
+					req.getParameter("tod").replace("-", "/") 
 					+ " " + req.getParameter("tot");
 
 			LOG.info("dn: " + dn);
