@@ -120,23 +120,20 @@ public class HadoopJobHistorySaver {
 			LOG.info("Requested URL: " + req.getRequestURI());
 			final String dn = req.getParameter("dn");
 			final String ap = req.getParameter("ap");
-			final String fromDateTime = 
-					req.getParameter("fromd").replace("-", "/")
-					+ " " + req.getParameter("fromt");
-			final String toDateTime = 
-					req.getParameter("tod").replace("-", "/") 
-					+ " " + req.getParameter("tot");
-
 			LOG.info("dn: " + dn);
 			LOG.info("ap: " + ap);
-			LOG.info("fromDateTime: " + fromDateTime);
-			LOG.info("toDateTime: " + toDateTime);
 			resp.addHeader("Access-Control-Allow-Origin", "*");
 			resp.addHeader("Access-Control-Allow-Headers", "Content-Type");
 			resp.setContentType("application/json; charset=UTF-8");
 			final PrintWriter out = resp.getWriter();
 			switch (dn) {
 			case "hist":
+				final String fromDateTime = req.getParameter("fromd").replace("-", "/")
+					+ " " + req.getParameter("fromt");
+				final String toDateTime = req.getParameter("tod").replace("-", "/") 
+						+ " " + req.getParameter("tot");
+				LOG.info("fromDateTime: " + fromDateTime);
+				LOG.info("toDateTime: " + toDateTime);
 				out.println(historyReader.readLatestHistoryAsJson(ap,
 						fromDateTime, toDateTime));
 				out.close();

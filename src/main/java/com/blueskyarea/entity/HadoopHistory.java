@@ -6,7 +6,7 @@ import com.google.gson.annotations.SerializedName;
 
 public class HadoopHistory {
 	@SerializedName("apps")
-	public String apps;
+	public List<String> apps;
 	
 	@SerializedName("histories")
 	public List<HadoopApp> histories;
@@ -14,7 +14,7 @@ public class HadoopHistory {
 	public HadoopHistory(){
 	}
 	
-	public HadoopHistory(String apps, List<HadoopApp> histories) {
+	public HadoopHistory(List<String> apps, List<HadoopApp> histories) {
 		this.apps = apps;
 		this.histories = histories;
 	}
