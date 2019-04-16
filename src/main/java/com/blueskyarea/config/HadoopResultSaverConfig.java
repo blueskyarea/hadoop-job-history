@@ -77,6 +77,18 @@ public class HadoopResultSaverConfig {
 		return Integer.valueOf(propMap.get("proxy.port"));
 	}
 	
+	public int getNumRetryHttpReq() {
+		return Integer.valueOf(propMap.get("num.retry.http.req"));
+	}
+
+	public int getTimeoutConnectMil() {
+		return Integer.valueOf(propMap.get("timeout.connect.mil"));
+	}
+
+	public int getTimeoutReadMil() {
+		return Integer.valueOf(propMap.get("timeout.read.mil"));
+	}
+
 	public int getIntervalGetHistory() {
 		return Integer.valueOf(propMap.get("interval.get.history.millisec"));
 	}

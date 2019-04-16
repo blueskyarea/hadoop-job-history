@@ -15,28 +15,16 @@ import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-
-
-
 
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
-
-
-
-import com.blueskyarea.HadoopJobHistorySaver;
-import com.blueskyarea.config.HadoopResultSaverConfig;
 import com.blueskyarea.config.HadoopResultSaverConfig;
 import com.blueskyarea.entity.Hadoop;
 import com.blueskyarea.entity.HadoopApp;
@@ -63,34 +51,24 @@ public class JobHistoryGenerator {
 	public JobHistoryGenerator(HadoopResultSaverConfig config) {
 		this.config = config;
 		this.historyFilePath = config.getHistoryFilePath();
-	}
-
-	public String startToGetList() throws JsonSyntaxException, IOException, HadoopJobHistorySaverException {
-		this.hadoopRestApi = "http://" + config.getRmHost() + ":"
-				+ config.getRmPort() + "/ws/v1/cluster/apps?states="
-				+ config.getHadoopStatus() + "&user=" + config.getHadoopUser();
-		HttpResponse response = getRequestHttpContents();
-		return convertToView(response, new ArrayList<>());
-	}
-
-	public String startToGetHistory() throws IOException, HadoopJobHistorySaverException {
 		this.hadoopRestApi = "http://" + config.getRmHost() + ":"
 				+ config.getRmPort() + "/ws/v1/cluster/apps?states="
 				+ config.getHadoopStatusHistory() + "&user="
 				+ config.getHadoopUser();
+	}
+
+	public String startToGetHistory() throws IOException, HadoopJobHistorySaverException {
 		HttpResponse response = getRequestHttpContents();
 		List<HadoopApp> latestHistory = readLatestHistory();
 		return convertToView(response, latestHistory);
 	}
 
 	protected HttpResponse getRequestHttpContents() throws IOException {
-		LOG.info("hadoopRestApi:" + hadoopRestApi);
+		LOG.info("Hadoop REST API:" + hadoopRestApi);
 		Boolean proxyUse = config.getProxyUse();
 		HttpTransport transport = null;
 		if (proxyUse) {
-			String proxyHost = config.getProxyHost();
-	        int proxyPort = config.getProxyPort();
-			Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxyHost, proxyPort));
+			Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(config.getProxyHost(), config.getProxyPort()));
 			transport = new NetHttpTransport.Builder().setProxy(proxy).build();
 		} else {
 			transport = new NetHttpTransport.Builder().build();
@@ -98,7 +76,10 @@ public class JobHistoryGenerator {
 
 		HttpRequestFactory factory = transport.createRequestFactory();
 		GenericUrl genericUrl = new GenericUrl(hadoopRestApi);
-		HttpRequest request = factory.buildGetRequest(genericUrl);
+		HttpRequest request = factory.buildGetRequest(genericUrl)
+				.setNumberOfRetries(config.getNumRetryHttpReq())
+				.setConnectTimeout(config.getTimeoutConnectMil())
+				.setReadTimeout(config.getTimeoutReadMil());
 		try {
 			return request.execute();
 		} catch (NoRouteToHostException e) {
@@ -117,62 +98,34 @@ public class JobHistoryGenerator {
 			List<String> lines = Files.lines(
 					Paths.get(historyFilePath),
 					StandardCharsets.UTF_8).collect(Collectors.toList());
-			Type listType = new TypeToken<List<HadoopApp>>(){}.getType();
 			if (lines.isEmpty()) {
 				return new ArrayList<>();
 			}
 			
-			Gson gson = new Gson();
 			Type historyType = new TypeToken<HadoopHistory>(){}.getType();
-			HadoopHistory hist = gson.fromJson(lines.get(0), historyType);
-			System.out.println("-------------------");
-			System.out.println(hist.histories.get(0).startedTime);
-			System.out.println("-------------------");
+			HadoopHistory hist = new Gson().fromJson(lines.get(0), historyType);
 			return hist.histories;
-			//return gson.fromJson(hist.histories, listType);
 		} catch (Exception e) {
-			e.printStackTrace();
+			LOG.error("Failed to read latest history. path : "
+					+ historyFilePath + "Returning empty history.", e.getMessage());
 			return new ArrayList<>();
-		}
-	}
-
-	protected String readLatestHistory2() {
-		try {
-			Gson gson = new Gson();
-			List<String> lines = Files.lines(
-					Paths.get(historyFilePath),
-					StandardCharsets.UTF_8).collect(Collectors.toList());
-			Type listType = new TypeToken<List<HadoopApp>>(){}.getType();
-			List<HadoopApp> list = gson.fromJson(lines.get(0), listType);
-			//Hadoop originalJson = gson.fromJson(reader, Hadoop.class);
-			if (list.get(0) != null) {
-				System.out.println(list.get(0).id);
-				return list.get(0).id;
-			}
-			return "0";
-		} catch (Exception e) {
-			e.printStackTrace();
-			return "0";
 		}
 	}
 
 	protected String convertToView(HttpResponse response, List<HadoopApp> latestHistory)
 			throws JsonSyntaxException, IOException {
 		Gson gson = new Gson();
-		//String latestId = "0";
 		
-		// filter by epoctime
+		// filter by epoc time
 		long epochToKeepHistory = Instant.now().minus(config.getDaysToKeepHistory(), ChronoUnit.DAYS).toEpochMilli();
+		SimpleDateFormat df = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 		List<HadoopApp> filteredLatestHistory =
 				latestHistory.stream().filter(hist -> {
 					long epoch = 0;
 					try {
-						SimpleDateFormat df = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-						Date date;
-						date = df.parse(hist.startedTime);
-						epoch = date.getTime();
+						epoch = df.parse(hist.startedTime).getTime();
 					} catch (Exception e) {
-						e.printStackTrace();
+						throw new HadoopJobHistorySaverRuntimeException(e.getMessage());
 					}
 					return epoch > epochToKeepHistory;
 				}).collect(Collectors.toList());
@@ -184,7 +137,6 @@ public class JobHistoryGenerator {
 				idList.add(history.id);
 				nameSet.add(history.name);
 			});
-			//latestId = latestHistory.get(latestHistory.size() - 1).id;
 		}
 		
 		// save name set
@@ -193,6 +145,7 @@ public class JobHistoryGenerator {
 		Hadoop originalJson = gson.fromJson(response.parseAsString(),
 				Hadoop.class);
 		
+		// if response does not have HadoopApps, just return latest history.
 		if (originalJson == null || originalJson.hadoopApps == null) {
 			return gson.toJson(latestHistory);
 		}
@@ -228,16 +181,13 @@ public class JobHistoryGenerator {
 			filteredLatestHistory.add(app);
 		}
 		
-		HadoopHistory hist = new HadoopHistory(String.join(",", nameSet), filteredLatestHistory);
-		
+		HadoopHistory hist = new HadoopHistory(new ArrayList<>(nameSet), filteredLatestHistory);
 		return gson.toJson(hist);
 	}
 	
 	protected void saveNameList(Set<String> nameSet) throws IOException {
 		BufferedWriter out = new BufferedWriter(new FileWriter("/tmp/apps.txt"));
 		Iterator<String> it = nameSet.iterator();
-		System.out.println(nameSet.size());
-		nameSet.forEach(System.out::println);
 		while(it.hasNext()) {
 		    out.write(it.next());
 		    out.newLine();

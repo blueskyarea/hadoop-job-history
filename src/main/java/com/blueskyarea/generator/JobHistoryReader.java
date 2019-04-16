@@ -46,7 +46,7 @@ public class JobHistoryReader {
 			return new HadoopHistory(filteredApps, filteredHistories);
 		} catch (Exception e) {
 			LOG.error("Failed to read latest history. path : "
-					+ historyFilePath + "Returning empty history.");
+					+ historyFilePath + "Returning empty history.", e.getMessage());
 			return new HadoopHistory();
 		}
 	}
