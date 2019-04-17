@@ -47,6 +47,7 @@ public class JobHistoryGenerator {
 	private HadoopResultSaverConfig config;
 	private String hadoopRestApi;
 	private String historyFilePath;
+	private SimpleDateFormat dfForStartTime = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 
 	public JobHistoryGenerator(HadoopResultSaverConfig config) {
 		this.config = config;
@@ -118,12 +119,11 @@ public class JobHistoryGenerator {
 		
 		// filter by epoc time
 		long epochToKeepHistory = Instant.now().minus(config.getDaysToKeepHistory(), ChronoUnit.DAYS).toEpochMilli();
-		SimpleDateFormat df = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 		List<HadoopApp> filteredLatestHistory =
 				latestHistory.stream().filter(hist -> {
 					long epoch = 0;
 					try {
-						epoch = df.parse(hist.startedTime).getTime();
+						epoch = dfForStartTime.parse(hist.startedTime).getTime();
 					} catch (Exception e) {
 						throw new HadoopJobHistorySaverRuntimeException(e.getMessage());
 					}
@@ -164,11 +164,9 @@ public class JobHistoryGenerator {
 			app.name = hadoopApp.name;
 			app.state = hadoopApp.state;
 			app.finalStatus = hadoopApp.finalStatus;
-			Long elapedTime = Long.parseLong(hadoopApp.elapsedTime) - 32400000;
-			app.elapsedTime = calcElaspedTime(elapedTime);
+			app.elapsedTime = calcElaspedTime(hadoopApp.elapsedTime);
 			app.memorySeconds = hadoopApp.memorySeconds;
 			app.vcoreSeconds = hadoopApp.vcoreSeconds;
-			LOG.info("elapsedTime: " + elapedTime);
 			LOG.info("Long.parseLong(hadoopApp.memorySeconds)" + Long.parseLong(hadoopApp.memorySeconds));
 			LOG.info("Long.parseLong(hadoopApp.vcoreSeconds)" + Long.parseLong(hadoopApp.vcoreSeconds));
 			//app.allocatedMBPerSeconds = String.valueOf(Long.parseLong(hadoopApp.memorySeconds) / Long.parseLong(DateFormatUtils.format(elapedTime, "ss")));
@@ -199,15 +197,11 @@ public class JobHistoryGenerator {
 		Long startedTime = Long.parseLong(startedTimeMin);
 		return DateFormatUtils.format(startedTime, "yyyy/MM/dd HH:mm:ss");
 	}
-	
-	protected String calcElaspedTime(Long elapedTime) {
-		return DateFormatUtils.format(elapedTime, "HH:mm:ss");
-	}
 
-	/*protected String calcElaspedTime(String elapedTimeMin) {
+	protected String calcElaspedTime(String elapedTimeMin) {
 		Long elapedTime = Long.parseLong(elapedTimeMin) - 32400000;
 		return DateFormatUtils.format(elapedTime, "HH:mm:ss");
-	}*/
+	}
 
 	protected String createIdWithTrackingUrl(HadoopApp app) {
 		return "<a href=\"" + app.trackingUrl + "\" target=\"_blank\">"
