@@ -14,6 +14,7 @@
 <entry key="num.retry.http.req">3</entry>
 <entry key="timeout.connect.mil">5000</entry>
 <entry key="timeout.read.mil">10000</entry>
+<entry key="welcome.file.name">hist.html</entry>
 <entry key="history.file.path">/tmp/hadoop-history.txt</entry>
 <entry key="interval.get.history.millisec">60000</entry>
 <entry key="days.to.keep.history">7</entry>

@@ -38,13 +38,13 @@ public class HadoopJobHistorySaver {
 
 	public static void main(String[] args) throws InterruptedException {
 		LOG.info("HadoopJobHistorySaver started as independent application.");
-		new HadoopJobHistorySaver().start();
+		new HadoopJobHistorySaver().startWithServer();
 	}
 
 	/**
 	 * This is public for using as library also.
 	 */
-	public void start() {
+	public void startWithServer() {
 		final Server jettyServer = new Server();
 		final HandlerList handlerList = createHandlerList();
 		final HttpConnectionFactory httpConnFactory = createHttpConnectionFactory();
@@ -56,8 +56,7 @@ public class HadoopJobHistorySaver {
 
 		try {
 			// start ExecutorService for getting history
-			ExecutorService s = Executors.newSingleThreadExecutor();
-			s.submit(new JobHistoryThread(config));
+			startHistoryService();
 
 			// start jetty server for web application
 			jettyServer.start();
@@ -65,6 +64,14 @@ public class HadoopJobHistorySaver {
 		} catch (Exception e) {
 			throw new HadoopJobHistorySaverRuntimeException(e.getMessage());
 		}
+	}
+	
+	/**
+	 * if any client start server, call this method & start only history service
+	 */
+	public void startHistoryService() {
+		ExecutorService s = Executors.newSingleThreadExecutor();
+		s.submit(new JobHistoryThread(config));
 	}
 
 	protected HandlerList createHandlerList() {
@@ -79,7 +86,7 @@ public class HadoopJobHistorySaver {
 		LOG.info("thisJarDirPath : " + thisJarDirPath);
 		resourceHandler.setResourceBase(thisJarDirPath + "/view");
 		resourceHandler.setDirectoriesListed(false);
-		resourceHandler.setWelcomeFiles(new String[] { "hist.html" });
+		resourceHandler.setWelcomeFiles(new String[] { config.getWelcomeFileName() });
 		resourceHandler.setCacheControl("no-store,no-cache,must-revalidate");
 
 		// Set HandlerList for jetty server
@@ -140,6 +147,7 @@ public class HadoopJobHistorySaver {
 				break;
 			default:
 				LOG.info("unexpected parameter dn: " + dn);
+				out.close();
 			}
 		}
 	}

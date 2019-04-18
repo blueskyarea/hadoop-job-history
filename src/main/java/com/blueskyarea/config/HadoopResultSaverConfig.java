@@ -66,6 +66,10 @@ public class HadoopResultSaverConfig {
 	public String getHadoopStatusHistory() {
 		return propMap.get("hadoop.status.history");
 	}
+	
+	public String getWelcomeFileName() {
+		return propMap.get("welcome.file.name");
+	}
 
 	public String getHistoryFilePath() {
 		return propMap.get("history.file.path");

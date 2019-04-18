@@ -148,12 +148,12 @@ function createTable(data) {
 	
 	$("#last-update").text(date);
 	if (init) {
+		init = false;
 		setInterval(autoUpdate, 60000);
 	}	
 }
 
 function autoUpdate() {
-	init = false;
 	if(document.getElementById('autoupdate').checked){
 		getData();
 	}
