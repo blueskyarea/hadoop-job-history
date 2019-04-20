@@ -1,5 +1,6 @@
 package com.blueskyarea.entity;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.google.gson.annotations.SerializedName;
@@ -12,6 +13,8 @@ public class HadoopHistory {
 	public List<HadoopApp> histories;
 	
 	public HadoopHistory(){
+		this.apps = new ArrayList<String>();
+		this.histories = new ArrayList<HadoopApp>();
 	}
 	
 	public HadoopHistory(List<String> apps, List<HadoopApp> histories) {

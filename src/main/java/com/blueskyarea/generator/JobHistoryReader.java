@@ -41,9 +41,8 @@ public class JobHistoryReader {
 					.filter(d -> compareTime(from, d.startedTime)
 							&& compareTime(d.startedTime, to))
 					.collect(Collectors.toList());
-			List<String> filteredApps = filteredHistories.stream()
-					.map(d -> d.name).collect(Collectors.toList());
-			return new HadoopHistory(filteredApps, filteredHistories);
+			// Unnecessary to filter for creating hist.apps(required all list of apps).
+			return new HadoopHistory(hist.apps, filteredHistories);
 		} catch (Exception e) {
 			LOG.error("Failed to read latest history. path : "
 					+ historyFilePath + "Returning empty history.", e.getMessage());

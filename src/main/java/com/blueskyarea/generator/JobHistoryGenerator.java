@@ -131,16 +131,11 @@ public class JobHistoryGenerator {
 				}).collect(Collectors.toList());
 		
 		List<String> idList = new ArrayList<>();
-		Set<String> nameSet = new HashSet<>();
 		if (filteredLatestHistory.size() > 0) {
 			filteredLatestHistory.forEach(history -> {
 				idList.add(history.id);
-				nameSet.add(history.name);
 			});
 		}
-		
-		// save name set
-		saveNameList(nameSet);
 		
 		Hadoop originalJson = gson.fromJson(response.parseAsString(),
 				Hadoop.class);
@@ -179,6 +174,11 @@ public class JobHistoryGenerator {
 			filteredLatestHistory.add(app);
 		}
 		
+		// should create name list after updated history.
+		Set<String> nameSet = new HashSet<>();
+		filteredLatestHistory.forEach(history -> {
+			nameSet.add(history.name);
+		});
 		HadoopHistory hist = new HadoopHistory(new ArrayList<>(nameSet), filteredLatestHistory);
 		return gson.toJson(hist);
 	}
