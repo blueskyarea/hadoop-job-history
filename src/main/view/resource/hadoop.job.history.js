@@ -6,18 +6,12 @@ $(document).ready(function() {
 	getData();
 })
 
-function hideAllTable() {
-	$("#applicationTable_wrapper").hide();
-}
-
 function getData() {
 	var selectApp = $('[name=applications]').val();
 	var fromDate = $('#from-date').val();
 	var fromTime = $('#from-time').val();
 	var toDate = $('#to-date').val();
 	var toTime = $('#to-time').val();
-	console.log(fromDate);
-	console.log(fromTime);
 	$.ajax(
 			{
 				type : 'GET',
@@ -38,18 +32,7 @@ function handlingOfFailedToLoad() {
 	$("#msgFailToGetData").show();
 }
 
-function updateAppOption(data) {
-	var apps = data["apps"];
-	for (var i = 0; i < apps.length; i++) {
-		op = document.createElement("option");
-		op.value = apps[i];
-		op.text = apps[i];
-		document.getElementById("applications").appendChild(op);
-	}
-}
-
 function createChart(data, selectApp) {
-	console.log(data);
 	if (data.length == 0) {
 		return;
 	}
@@ -66,6 +49,10 @@ function createChart(data, selectApp) {
 	if (myChart) {
 		myChart.destroy();
 	}
+
+	var maxElapsedTime = Math.max.apply(null, elapsedTimes) + 60;
+	var stepSize = maxElapsedTime / 10;
+
 	myChart = new Chart(ctx, {
 		type : 'bar',
 		data : {
@@ -92,14 +79,24 @@ function createChart(data, selectApp) {
 					type : "linear",
 					position : "left",
 					ticks : {
-						max : 100,
+						max : maxElapsedTime,
 						min : 0,
-						stepSize : 10
+						stepSize : stepSize
 					},
 				} ],
 			},
 		}
 	});
+}
+
+function updateAppOption(data) {
+	var apps = data["apps"];
+	for (var i = 0; i < apps.length; i++) {
+		op = document.createElement("option");
+		op.value = apps[i];
+		op.text = apps[i];
+		document.getElementById("applications").appendChild(op);
+	}
 }
 
 function convert2Sec(t) {
@@ -167,10 +164,8 @@ function createTable(data) {
 	}
 }
 
-function autoUpdate() {
-	if (document.getElementById('autoupdate').checked) {
-		getData();
-	}
+function hideAllTable() {
+	$("#applicationTable_wrapper").hide();
 }
 
 function toDoubleDigits(num) {
@@ -179,4 +174,10 @@ function toDoubleDigits(num) {
 		num = "0" + num;
 	}
 	return num;
+}
+
+function autoUpdate() {
+	if (document.getElementById('autoupdate').checked) {
+		getData();
+	}
 }
