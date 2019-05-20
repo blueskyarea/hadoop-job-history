@@ -42,6 +42,10 @@ public class HadoopResultSaverConfig {
 		}
 		return instance;
 	}
+	
+	public Boolean getAppWebEnable() {
+		return Boolean.valueOf(propMap.get("app.web.enable"));
+	}
 
 	public int getAppPort() {
 		return Integer.valueOf(propMap.get("app.port"));

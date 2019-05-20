@@ -45,22 +45,24 @@ public class HadoopJobHistorySaver {
 	 * This is public for using as library also.
 	 */
 	public void startWithServer() {
-		final Server jettyServer = new Server();
-		final HandlerList handlerList = createHandlerList();
-		final HttpConnectionFactory httpConnFactory = createHttpConnectionFactory();
-		final ServerConnector httpConnector = new ServerConnector(jettyServer,
-				httpConnFactory);
-		httpConnector.setPort(config.getAppPort());
-		jettyServer.setHandler(handlerList);
-		jettyServer.setConnectors(new Connector[] { httpConnector });
-
 		try {
 			// start ExecutorService for getting history
 			startHistoryService();
 
 			// start jetty server for web application
-			jettyServer.start();
-			jettyServer.join();
+			if (config.getAppWebEnable()) {
+				final Server jettyServer = new Server();
+				final HandlerList handlerList = createHandlerList();
+				final HttpConnectionFactory httpConnFactory = createHttpConnectionFactory();
+				final ServerConnector httpConnector = new ServerConnector(jettyServer,
+						httpConnFactory);
+				httpConnector.setPort(config.getAppPort());
+				jettyServer.setHandler(handlerList);
+				jettyServer.setConnectors(new Connector[] { httpConnector });
+				
+				jettyServer.start();
+				jettyServer.join();
+			}
 		} catch (Exception e) {
 			throw new HadoopJobHistorySaverRuntimeException(e.getMessage());
 		}

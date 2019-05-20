@@ -22,10 +22,14 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.time.DateFormatUtils;
+import org.elasticsearch.action.bulk.BulkRequest;
+import org.elasticsearch.action.index.IndexRequest;
+import org.elasticsearch.common.xcontent.XContentType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.blueskyarea.config.HadoopResultSaverConfig;
+import com.blueskyarea.elastic.ElsImporter;
 import com.blueskyarea.entity.Hadoop;
 import com.blueskyarea.entity.HadoopApp;
 import com.blueskyarea.entity.HadoopHistory;
@@ -114,7 +118,7 @@ public class JobHistoryGenerator {
 	}
 
 	protected String convertToView(HttpResponse response, List<HadoopApp> latestHistory)
-			throws JsonSyntaxException, IOException {
+			throws IOException {
 		Gson gson = new Gson();
 		
 		// filter by epoc time
@@ -145,6 +149,9 @@ public class JobHistoryGenerator {
 			return gson.toJson(latestHistory);
 		}
 		
+		// elastic
+		BulkRequest bulkRequest = new BulkRequest();
+		
 		for (HadoopApp hadoopApp : originalJson.hadoopApps.hadoopApp) {
 			HadoopApp app = new HadoopApp();
 			app.id = createIdWithTrackingUrl(hadoopApp);
@@ -172,7 +179,16 @@ public class JobHistoryGenerator {
 			app.queueUsagePercentage = hadoopApp.queueUsagePercentage;
 			app.clusterUsagePercentage = hadoopApp.clusterUsagePercentage;
 			filteredLatestHistory.add(app);
+			
+			// elastic
+			IndexRequest request = new IndexRequest("posts");
+			String jsonString = gson.toJson(app);
+			request.source(jsonString, XContentType.JSON);
+			bulkRequest.add(request);
 		}
+		
+		// elastic
+		new ElsImporter().execute(bulkRequest);
 		
 		// should create name list after updated history.
 		Set<String> nameSet = new HashSet<>();

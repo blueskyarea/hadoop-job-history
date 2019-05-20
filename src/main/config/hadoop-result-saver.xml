@@ -2,6 +2,7 @@
 <!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
 <properties>
 <comment>hadoop-result-saver</comment>
+<entry key="app.web.enable">true</entry>
 <entry key="app.port">8080</entry>
 <entry key="hadoop.rm.hostname">172.20.0.2</entry>
 <entry key="hadoop.rm.port">8088</entry>
