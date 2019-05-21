@@ -150,7 +150,7 @@ public class JobHistoryGenerator {
 		}
 		
 		// elastic
-		BulkRequest bulkRequest = new BulkRequest();
+		//BulkRequest bulkRequest = new BulkRequest();
 		
 		for (HadoopApp hadoopApp : originalJson.hadoopApps.hadoopApp) {
 			HadoopApp app = new HadoopApp();
@@ -181,14 +181,14 @@ public class JobHistoryGenerator {
 			filteredLatestHistory.add(app);
 			
 			// elastic
-			IndexRequest request = new IndexRequest("posts");
-			String jsonString = gson.toJson(app);
-			request.source(jsonString, XContentType.JSON);
-			bulkRequest.add(request);
+			//IndexRequest request = new IndexRequest("posts");
+			//String jsonString = gson.toJson(app);
+			//request.source(jsonString, XContentType.JSON);
+			//bulkRequest.add(request);
 		}
 		
 		// elastic
-		new ElsImporter().execute(bulkRequest);
+		//new ElsImporter().execute(bulkRequest);
 		
 		// should create name list after updated history.
 		Set<String> nameSet = new HashSet<>();

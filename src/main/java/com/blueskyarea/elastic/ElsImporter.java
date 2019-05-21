@@ -2,12 +2,8 @@ package com.blueskyarea.elastic;
 
 import java.io.IOException;
 
-import org.apache.http.HttpHost;
 import org.elasticsearch.action.bulk.BulkRequest;
-import org.elasticsearch.action.bulk.BulkResponse;
-import org.elasticsearch.client.RequestOptions;
-import org.elasticsearch.client.RestClient;
-import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.common.settings.Settings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,14 +14,21 @@ public class ElsImporter {
 	}
 	
 	public void execute(BulkRequest bulkRequest) throws IOException {
-		RestHighLevelClient client = new RestHighLevelClient(
+		LOG.info("starting");
+		Settings settings = Settings.builder()
+		        .put("cluster.name", "docker-cluster").build();
+		//TransportClient client = new PreBuiltTransportClient(settings)
+        //.addTransportAddress(new TransportAddress(InetAddress.getByName("172.40.0.1"), 9300));
+		/*RestHighLevelClient client = new RestHighLevelClient(
 		        RestClient.builder(
-		                new HttpHost("172.40.0.1", 9200, "http")));
+		                new HttpHost("172.40.0.1", 9200, "http")));*/
 		
-		BulkResponse bulkResponse = client.bulk(bulkRequest, RequestOptions.DEFAULT);
-		if (bulkResponse.hasFailures()) { 
-			LOG.error("Failed to save data into elastic.");
-		}
-		client.close();
+		//BulkResponse bulkResponse = (BulkResponse) client.bulk(bulkRequest);
+		//if (bulkResponse.hasFailures()) { 
+		//	LOG.error("Failed to save data into elastic.");
+		//}
+		
+		LOG.info("ending");
+		//client.close();
 	}
 }

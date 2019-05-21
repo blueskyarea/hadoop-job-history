@@ -16,10 +16,12 @@ public class JobHistoryThread implements Runnable {
 			.getLogger("JobHistoryThread");
 	private HadoopResultSaverConfig config;
 	private String historyFilePath;
+	private JobHistoryGenerator historyGenerator;
 
 	public JobHistoryThread(HadoopResultSaverConfig config) {
 		this.config = config;
 		this.historyFilePath = config.getHistoryFilePath();
+		this.historyGenerator = new JobHistoryGenerator(config);
 	}
 
 	@Override
@@ -29,7 +31,8 @@ public class JobHistoryThread implements Runnable {
 			try {
 				Thread.sleep(config.getIntervalGetHistory());
 				LOG.info("Getting history.");
-				String result = new JobHistoryGenerator(config).startToGetHistory();
+				//String result = new JobHistoryGenerator(config).startToGetHistory();
+				String result = historyGenerator.startToGetHistory();
 				File file = new File(historyFilePath);
 				FileWriter filewriter = new FileWriter(file);
 				filewriter.write(result);
