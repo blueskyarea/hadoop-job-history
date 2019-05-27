@@ -90,6 +90,22 @@ public class HadoopResultSaverConfig {
 	public int getProxyPort() {
 		return Integer.valueOf(propMap.get("proxy.port"));
 	}
+	
+	public Boolean getElasticUse() {
+		return Boolean.valueOf(propMap.get("elastic.use"));
+	}
+
+	public String getElasticHost() {
+		return propMap.get("elastic.host");
+	}
+	
+	public String getElasticIndex() {
+		return propMap.get("elastic.index");
+	}
+
+	public int getElasticPort() {
+		return Integer.valueOf(propMap.get("elastic.port"));
+	}
 
 	public int getNumRetryHttpReq() {
 		return Integer.valueOf(propMap.get("num.retry.http.req"));

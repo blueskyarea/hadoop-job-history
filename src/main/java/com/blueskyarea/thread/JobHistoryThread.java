@@ -31,7 +31,6 @@ public class JobHistoryThread implements Runnable {
 			try {
 				Thread.sleep(config.getIntervalGetHistory());
 				LOG.info("Getting history.");
-				//String result = new JobHistoryGenerator(config).startToGetHistory();
 				String result = historyGenerator.startToGetHistory();
 				File file = new File(historyFilePath);
 				FileWriter filewriter = new FileWriter(file);

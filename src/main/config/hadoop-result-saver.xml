@@ -12,6 +12,10 @@
 <entry key="proxy.use">false</entry>
 <entry key="proxy.host"></entry>
 <entry key="proxy.port"></entry>
+<entry key="elastic.use">false</entry>
+<entry key="elastic.host"></entry>
+<entry key="elastic.port"></entry>
+<entry key="elastic.index"></entry>
 <entry key="num.retry.http.req">3</entry>
 <entry key="timeout.connect.mil">5000</entry>
 <entry key="timeout.read.mil">10000</entry>
